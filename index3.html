@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>FitAI Elite | رشيق وأنيق</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00ff88;
+            --bg: #050505;
+            --card: rgba(30, 30, 30, 0.6);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body { background: var(--bg); color: #fff; height: 100vh; overflow: hidden; }
+
+        .page-container { position: relative; width: 100%; height: 100%; }
+        .page { 
+            position: absolute; inset: 0; padding: 20px; 
+            display: none; overflow-y: auto; text-align: center;
+            animation: fadeIn 0.4s ease;
+        }
+        .active-page { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* الأزرار المصغرة والأنيقة */
+        .btn-prime {
+            display: inline-block;
+            min-width: 160px;
+            padding: 12px 25px;
+            background: var(--primary);
+            color: #000;
+            border: none;
+            border-radius: 50px; /* شكل كبسولي */
+            font-weight: 800;
+            font-size: 0.95rem;
+            cursor: pointer;
+            margin: 20px auto;
+            transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 255, 136, 0.2);
+        }
+        .btn-prime:active { transform: scale(0.92); }
+
+        /* الحقول المصغرة والموسّطة */
+        .glass-card {
+            background: var(--card); backdrop-filter: blur(10px);
+            border: 1px solid var(--border); border-radius: 25px;
+            padding: 20px; margin: 0 auto 20px;
+            max-width: 340px; /* تحديد العرض للموبايل */
+        }
+
+        input, select {
+            width: 85%;
+            max-width: 260px;
+            padding: 12px;
+            margin: 8px auto;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: rgba(0,0,0,0.4);
+            color: #fff;
+            text-align: center;
+            display: block;
+        }
+
+        .header { padding: 25px 0; }
+        .logo { font-size: 1.8rem; font-weight: 900; color: var(--primary); }
+
+        /* الإحصائيات */
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 340px; margin: 0 auto 15px; }
+        .stat-box { background: rgba(255,255,255,0.05); padding: 12px; border-radius: 15px; }
+        .stat-box b { color: var(--primary); font-size: 1.1rem; }
+        
+        .macro-bar { display: flex; height: 6px; border-radius: 10px; overflow: hidden; margin: 10px 0; }
+        .p-1 { background: #ff4444; } .p-2 { background: #4444ff; } .p-3 { background: #ffbb33; }
+
+        .timer-circle {
+            width: 140px; height: 140px; border: 5px solid var(--primary);
+            border-radius: 50%; margin: 20px auto;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 3rem; font-weight: 900; font-family: monospace;
+        }
+
+        .history-item {
+            display: flex; justify-content: space-between; padding: 8px 0;
+            border-bottom: 1px solid #222; font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-container">
+    <div id="page1" class="page active-page">
+        <div class="header"><div class="logo">FitAI <span>Elite</span></div></div>
+        <div class="glass-card">
+            <h4 style="margin-bottom:15px; color:#888;">إعداداتك الرياضية</h4>
+            <input type="number" id="age" placeholder="العمر">
+            <input type="number" id="weight" placeholder="الوزن (كجم)">
+            <input type="number" id="height" placeholder="الطول (سم)">
+            <select id="goal">
+                <option value="lose">خسارة وزن 🔥</option>
+                <option value="gain">بناء عضلات 💪</option>
+                <option value="fit">لياقة عامة ✨</option>
+            </select>
+        </div>
+        <button class="btn-prime" onclick="initApp()">ابدأ الرحلة 🚀</button>
+    </div>
+
+    <div id="page2" class="page">
+        <div class="header"><div class="logo">لوحة التحكم</div></div>
+        <div class="stat-grid">
+            <div class="stat-box"><small>BMI</small><br><b id="bmi">--</b></div>
+            <div class="stat-box"><small>السعرات</small><br><b id="tdee">--</b></div>
+        </div>
+        <div class="glass-card">
+            <h4 style="font-size:0.9rem; margin-bottom:10px;">توزيع الماكروز</h4>
+            <div class="macro-bar">
+                <div class="p-1" style="width: 35%"></div><div class="p-2" style="width: 45%"></div><div class="p-3" style="width: 20%"></div>
+            </div>
+            <p id="waterInfo" style="font-size:0.75rem; color:#888; margin-top:5px;"></p>
+        </div>
+        <div class="glass-card" style="max-height: 150px; overflow-y: auto;">
+            <h4 style="font-size:0.9rem; margin-bottom:10px;">آخر النشاطات</h4>
+            <div id="historyList"></div>
+        </div>
+        <button class="btn-prime" onclick="startWorkout()">بدء التمرين ⚡</button>
+    </div>
+
+    <div id="page3" class="page">
+        <h2 id="exName" style="margin-top:40px;">استعد...</h2>
+        <div class="timer-circle" id="timer">00</div>
+        <p id="exProgress" style="color:var(--primary); font-size:0.9rem;">--</p>
+        <button class="btn-prime" id="timerBtn" onclick="runTimer()">ابدأ الآن</button>
+    </div>
+
+    <div id="page4" class="page">
+        <div style="font-size:4rem; margin-top:40px;">🎉</div>
+        <h2>أحسنت صنعاً!</h2>
+        <div class="glass-card" style="margin-top:20px;">
+            <p style="font-size:0.9rem; color:#888;">سعراتك في هذه الجلسة:</p>
+            <b id="sessionCal" style="font-size:2.5rem; color:var(--primary);">0</b>
+        </div>
+        <button class="btn-prime" onclick="showPage('page2')">تم</button>
+    </div>
+</div>
+
+<script>
+    const workouts = [
+        { name: "قفز جاك", met: 8, sec: 30 },
+        { name: "تمرين الضغط", met: 4, sec: 20 },
+        { name: "قرفصاء", met: 5, sec: 30 },
+        { name: "بلانك", met: 3, sec: 30 }
+    ];
+
+    let currentIdx = 0;
+    let timerInterval;
+
+    window.onload = () => {
+        if(localStorage.getItem('fitSettings')) {
+            showPage('page2');
+            updateDashboard();
+        }
+    };
+
+    function showPage(id) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
+        document.getElementById(id).classList.add('active-page');
+    }
+
+    function initApp() {
+        const settings = {
+            age: document.getElementById('age').value,
+            weight: document.getElementById('weight').value,
+            height: document.getElementById('height').value,
+            goal: document.getElementById('goal').value
+        };
+        if(!settings.weight || !settings.height) return alert("اكمل البيانات");
+        localStorage.setItem('fitSettings', JSON.stringify(settings));
+        updateDashboard();
+        showPage('page2');
+    }
+
+    function updateDashboard() {
+        const s = JSON.parse(localStorage.getItem('fitSettings'));
+        const bmi = (s.weight / ((s.height/100)**2)).toFixed(1);
+        document.getElementById('bmi').innerText = bmi;
+        document.getElementById('tdee').innerText = Math.round((10*s.weight + 6.25*s.height - 5*s.age + 5) * 1.3);
+        document.getElementById('waterInfo').innerText = `اشرب ${(s.weight * 0.033).toFixed(1)} لتر ماء يومياً.`;
+        
+        const history = JSON.parse(localStorage.getItem('fitHistory') || '[]');
+        document.getElementById('historyList').innerHTML = history.slice(0, 3).map(h => `
+            <div class="history-item"><span>${h.date}</span><span>${h.cal} سعرة</span></div>
+        `).join('') || '<small style="color:#555">لا توجد سجلات.</small>';
+    }
+
+    function startWorkout() {
+        currentIdx = 0;
+        loadExercise();
+        showPage('page3');
+    }
+
+    function loadExercise() {
+        const ex = workouts[currentIdx];
+        document.getElementById('exName').innerText = ex.name;
+        document.getElementById('timer').innerText = ex.sec;
+        document.getElementById('exProgress').innerText = `تمرين ${currentIdx + 1} من ${workouts.length}`;
+        document.getElementById('timerBtn').style.display = 'inline-block';
+    }
+
+    function runTimer() {
+        document.getElementById('timerBtn').style.display = 'none';
+        let t = workouts[currentIdx].sec;
+        timerInterval = setInterval(() => {
+            t--;
+            document.getElementById('timer').innerText = t;
+            if(t <= 0) {
+                clearInterval(timerInterval);
+                if(currentIdx < workouts.length - 1) {
+                    currentIdx++;
+                    loadExercise();
+                } else {
+                    finishAll();
+                }
+            }
+        }, 1000);
+    }
+
+    function finishAll() {
+        const s = JSON.parse(localStorage.getItem('fitSettings'));
+        let burn = 0;
+        workouts.forEach(ex => burn += (ex.met * 3.5 * s.weight / 200) * (ex.sec/60));
+        const total = Math.round(burn);
+        document.getElementById('sessionCal').innerText = total;
+        
+        let history = JSON.parse(localStorage.getItem('fitHistory') || '[]');
+        history.unshift({ date: new Date().toLocaleDateString('ar-EG'), cal: total });
+        localStorage.setItem('fitHistory', JSON.stringify(history));
+        
+        if(navigator.vibrate) navigator.vibrate([200, 100, 200]);
+        updateDashboard();
+        showPage('page4');
+    }
+</script>
+</body>
+</html>
+
+
